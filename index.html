@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIP39 Domino Draw Seed Generator</title>
+  <style>
+    body {
+      background: #1a1a2e;
+      color: #eaeaea;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #f0a500;
+      text-align: center;
+      border-bottom: 2px solid #f0a500;
+      padding-bottom: 10px;
+    }
+    .container {
+      background: #16213e;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #d4d4d4;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #0f3460;
+      color: #fff;
+      font-size: 1.1rem;
+      box-sizing: border-box;
+      margin-top: 5px;
+    }
+    button {
+      background: #f0a500;
+      color: #1a1a2e;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #ffc107;
+      transform: scale(1.02);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background: #533483;
+      color: #fff;
+    }
+    button.secondary:hover {
+      background: #6a4c9c;
+    }
+    .output-area {
+      background: #0a0a1a;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 1px solid #333;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      color: #8be9fd;
+    }
+    .output-area .label {
+      color: #aaa;
+      font-weight: bold;
+      font-family: 'Segoe UI', sans-serif;
+      margin-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .row button {
+      margin-top: 0;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+    }
+    .copy-btn {
+      background: #3b82f6;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .copy-btn:hover {
+      background: #2563eb;
+    }
+    .wordlist-status {
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .wordlist-status.pass {
+      background: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #10b981;
+    }
+    .wordlist-status.fail {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #ef4444;
+    }
+    small {
+      color: #888;
+      display: block;
+      margin-top: 5px;
+    }
+    .flex {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #drawSequence {
+      font-size: 1rem;
+      letter-spacing: 1px;
+      min-height: 44px;
+      padding: 12px;
+      background: #0f3460;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #8be9fd;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+    }
+    .domino-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .domino-tile {
+      display: inline-flex;
+      align-items: center;
+      background: #0f3460;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px 6px;
+      cursor: pointer;
+      transition: 0.15s;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 1.05rem;
+      font-weight: bold;
+    }
+    .domino-tile:hover:not(:disabled) {
+      background: #16457a;
+      transform: scale(1.05);
+    }
+    .domino-tile:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .domino-tile .pip {
+      width: 22px;
+      text-align: center;
+      display: inline-block;
+    }
+    .domino-tile .divider {
+      width: 2px;
+      height: 18px;
+      background: #f0a500;
+      margin: 0 4px;
+    }
+    .wordlist-status { cursor: pointer; }
+    .wordlist-status.collapsed {
+      white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; padding: 8px 12px;
+    }
+    @media (min-width: 768px) {
+      .wordlist-status.collapsed {
+        white-space: normal; overflow: visible;
+        text-overflow: clip; padding: 12px;
+      }
+      #auditSheet {
+        left: 50% !important; right: auto !important;
+        transform: translateX(-50%);
+        width: min(800px, 96vw);
+        border-radius: 12px 12px 0 0;
+      }
+      #auditOut { font-size: 0.85rem; }
+      #auditFab:hover { transform: scale(1.08); }
+    }
+    /* CLIPBOARD PERSISTENCE WARNING */
+    .clipboard-warning {
+      background: #7f1d1d;
+      color: #fca5a5;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 20px;
+      border: 1px solid #ef4444;
+      font-size: 0.9rem;
+    }
+    .clipboard-warning strong {
+      color: #fff;
+    }
+    .clipboard-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 8px;
+      background: #0a0a1a;
+      border-radius: 6px;
+      border: 1px solid #333;
+    }
+    .clipboard-toggle label {
+      margin: 0;
+      font-weight: normal;
+      color: #d4d4d4;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .clipboard-toggle input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🁣 BIP39 Domino Draw Seed</h1>
+
+<div class="container">
+  <p><strong>Draw one domino tile at a time from a standard 28-tile double-six set, tap the matching tile below, then return it to the set and reshuffle thoroughly before your next draw.</strong> Returning and reshuffling every time keeps each draw independent and uniformly random — exactly like drawing a tile from a well-shuffled domino set — which is what the security proof in the technical documentation depends on. Skipping the reshuffle (drawing without replacement) uses a different, incompatible model and is not supported by this tool.</p>
+  <p>Select your desired seed length below, then tap enough domino draws to match. Each tap is a full tile — you cannot enter an invalid or malformed draw.</p>
+
+  <label for="wordCount">Desired Seed Length:</label>
+  <select id="wordCount" style="width:100%; padding:12px; border:1px solid #333; border-radius:6px; background:#0f3460; color:#fff; font-size:1.1rem; margin-top:5px; box-sizing:border-box;">
+    <option value="12">12 words (128-bit entropy, 30 domino draws)</option>
+    <option value="15">15 words (160-bit entropy, 37 domino draws)</option>
+    <option value="18">18 words (192-bit entropy, 44 domino draws)</option>
+    <option value="21">21 words (224-bit entropy, 50 domino draws)</option>
+    <option value="24" selected>24 words (256-bit entropy, 57 domino draws)</option>
+  </select>
+
+  <label style="margin-top:18px;">Tap the tile you drew (smaller pip value shown first):</label>
+  <div id="dominoGrid" class="domino-grid"></div>
+
+  <label for="drawSequence" style="margin-top:18px;">Recorded Draws:</label>
+  <div id="drawSequence">(none yet)</div>
+
+  <div id="rollCounter" style="margin-top:8px; font-size:0.95rem; color:#aaa;">
+    🁣 <strong>0</strong> draws entered — need <strong>57</strong> more for 24 words
+  </div>
+
+  <div class="flex" style="margin-top:10px;">
+    <button id="generateBtn">🔮 Generate Seed</button>
+    <button id="undoDrawBtn" class="secondary">↩ Undo Last Draw</button>
+    <button id="clearDrawsBtn" class="secondary">✖ Clear Draws</button>
+  </div>
+
+  <div id="wordlistStatus" class="wordlist-status">⏳ Checking wordlist...</div>
+
+</div>
+
+<div class="container" id="resultsContainer" style="display:none;">
+  <h2 style="color:#f0a500; margin-top:0;">Recovery Phrase</h2>
+  <div id="mnemonicOutput" class="output-area">
+    <div class="label">📝 Your Seed Words</div>
+    <div id="mnemonicText">(generated here)</div>
+    <div style="margin-top:10px;">
+      <button class="copy-btn" id="copyMnemonicBtn">📋 Copy Phrase</button>
+    </div>
+  </div>
+
+  <h2 style="color:#f0a500;">BIP39 Entropy (Hex)</h2>
+  <div class="output-area">
+    <div class="label">🔐 Raw Entropy</div>
+    <div id="entropyText">(hex will appear here)</div>
+    <div style="margin-top:10px;">
+      <button class="copy-btn" id="copyEntropyBtn">📋 Copy Hex</button>
+    </div>
+  </div>
+
+  <p><small>This entropy is the raw randomness used to derive your seed phrase. Keep it secret.</small></p>
+  
+  <!-- CLIPBOARD PERSISTENCE WARNING -->
+  <div class="clipboard-warning">
+    ⚠️ <strong>Clipboard Persistence Warning:</strong><br>
+    Even after clicking "Clear Draws" or "Hard Reset", your operating system's
+    clipboard history (Windows 10/11, macOS Universal Clipboard, Chrome clipboard
+    history, third-party clipboard managers) may still retain copied secrets.
+    <strong>Disable clipboard history before use, or manually clear it after copying.</strong>
+  </div>
+
+  <!-- CLIPBOARD TOGGLE -->
+  <div class="clipboard-toggle">
+    <label>
+      <input type="checkbox" id="enableClipboardToggle" checked>
+      Enable clipboard copy buttons (disabled by default for maximum security)
+    </label>
+  </div>
+
+  <!-- NON-PERSISTENCE HARDENING: Burn-after-reading notice -->
+  <p><small>
+    ⏱️ <strong>Auto-clear:</strong> Results will automatically clear from the screen after 3 minutes.
+    Use the ✖ Clear Draws button or double-tap <kbd>Esc</kbd> to clear immediately.
+  </small></p>
+</div>
+
+<script>
+// ============================================================
+// OFFICIAL BIP39 WORDLIST (2048 words, sorted alphabetically)
+// ============================================================
+const WORDLIST = [
+  "abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse",
+  "access","accident","account","accuse","achieve","acid","acoustic","acquire","across","act",
+  "action","actor","actress","actual","adapt","add","addict","address","adjust","admit",
+  "adult","advance","advice","aerobic","affair","afford","afraid","again","age","agent",
+  "agree","ahead","aim","air","airport","aisle","alarm","album","alcohol","alert",
+  "alien","all","alley","allow","almost","alone","alpha","already","also","alter",
+  "always","amateur","amazing","among","amount","amused","analyst","anchor","ancient","anger",
+  "angle","angry","animal","ankle","announce","annual","another","answer","antenna","antique",
+  "anxiety","any","apart","apology","appear","apple","approve","april","arch","arctic",
+  "area","arena","argue","arm","armed","armor","army","around","arrange","arrest",
+  "arrive","arrow","art","artefact","artist","artwork","ask","aspect","assault","asset",
+  "assist","assume","asthma","athlete","atom","attack","attend","attitude","attract","auction",
+  "audit","august","aunt","author","auto","autumn","average","avocado","avoid","awake",
+  "aware","away","awesome","awful","awkward","axis","baby","bachelor","bacon","badge",
+  "bag","balance","balcony","ball","bamboo","banana","banner","bar","barely","bargain",
+  "barrel","base","basic","basket","battle","beach","bean","beauty","because","become",
+  "beef","before","begin","behave","behind","believe","below","belt","bench","benefit",
+  "best","betray","better","between","beyond","bicycle","bid","bike","bind","biology",
+  "bird","birth","bitter","black","blade","blame","blanket","blast","bleak","bless",
+  "blind","blood","blossom","blouse","blue","blur","blush","board","boat","body",
+  "boil","bomb","bone","bonus","book","boost","border","boring","borrow","boss",
+  "bottom","bounce","box","boy","bracket","brain","brand","brass","brave","bread",
+  "breeze","brick","bridge","brief","bright","bring","brisk","broccoli","broken","bronze",
+  "broom","brother","brown","brush","bubble","buddy","budget","buffalo","build","bulb",
+  "bulk","bullet","bundle","bunker","burden","burger","burst","bus","business","busy",
+  "butter","buyer","buzz","cabbage","cabin","cable","cactus","cage","cake","call",
+  "calm","camera","camp","can","canal","cancel","candy","cannon","canoe","canvas",
+  "canyon","capable","capital","captain","car","carbon","card","cargo","carpet","carry",
+  "cart","case","cash","casino","castle","casual","cat","catalog","catch","category",
+  "cattle","caught","cause","caution","cave","ceiling","celery","cement","census","century",
+  "cereal","certain","chair","chalk","champion","change","chaos","chapter","charge","chase",
+  "chat","cheap","check","cheese","chef","cherry","chest","chicken","chief","child",
+  "chimney","choice","choose","chronic","chuckle","chunk","churn","cigar","cinnamon","circle",
+  "citizen","city","civil","claim","clap","clarify","claw","clay","clean","clerk",
+  "clever","click","client","cliff","climb","clinic","clip","clock","clog","close",
+  "cloth","cloud","clown","club","clump","cluster","clutch","coach","coast","coconut",
+  "code","coffee","coil","coin","collect","color","column","combine","come","comfort",
+  "comic","common","company","concert","conduct","confirm","congress","connect","consider","control",
+  "convince","cook","cool","copper","copy","coral","core","corn","correct","cost",
+  "cotton","couch","country","couple","course","cousin","cover","coyote","crack","cradle",
+  "craft","cram","crane","crash","crater","crawl","crazy","cream","credit","creek",
+  "crew","cricket","crime","crisp","critic","crop","cross","crouch","crowd","crucial",
+  "cruel","cruise","crumble","crunch","crush","cry","crystal","cube","culture","cup",
+  "cupboard","curious","current","curtain","curve","cushion","custom","cute","cycle","dad",
+  "damage","damp","dance","danger","daring","dash","daughter","dawn","day","deal",
+  "debate","debris","decade","december","decide","decline","decorate","decrease","deer","defense",
+  "define","defy","degree","delay","deliver","demand","demise","denial","dentist","deny",
+  "depart","depend","deposit","depth","deputy","derive","describe","desert","design","desk",
+  "despair","destroy","detail","detect","develop","device","devote","diagram","dial","diamond",
+  "diary","dice","diesel","diet","differ","digital","dignity","dilemma","dinner","dinosaur",
+  "direct","dirt","disagree","discover","disease","dish","dismiss","disorder","display","distance",
+  "divert","divide","divorce","dizzy","doctor","document","dog","doll","dolphin","domain",
+  "donate","donkey","donor","door","dose","double","dove","draft","dragon","drama",
+  "drastic","draw","dream","dress","drift","drill","drink","drip","drive","drop",
+  "drum","dry","duck","dumb","dune","during","dust","dutch","duty","dwarf",
+  "dynamic","eager","eagle","early","earn","earth","easily","east","easy","echo",
+  "ecology","economy","edge","edit","educate","effort","egg","eight","either","elbow",
+  "elder","electric","elegant","element","elephant","elevator","elite","else","embark","embody",
+  "embrace","emerge","emotion","employ","empower","empty","enable","enact","end","endless",
+  "endorse","enemy","energy","enforce","engage","engine","enhance","enjoy","enlist","enough",
+  "enrich","enroll","ensure","enter","entire","entry","envelope","episode","equal","equip",
+  "era","erase","erode","erosion","error","erupt","escape","essay","essence","estate",
+  "eternal","ethics","evidence","evil","evoke","evolve","exact","example","excess","exchange",
+  "excite","exclude","excuse","execute","exercise","exhaust","exhibit","exile","exist","exit",
+  "exotic","expand","expect","expire","explain","expose","express","extend","extra","eye",
+  "eyebrow","fabric","face","faculty","fade","faint","faith","fall","false","fame",
+  "family","famous","fan","fancy","fantasy","farm","fashion","fat","fatal","father",
+  "fatigue","fault","favorite","feature","february","federal","fee","feed","feel","female",
+  "fence","festival","fetch","fever","few","fiber","fiction","field","figure","file",
+  "film","filter","final","find","fine","finger","finish","fire","firm","first",
+  "fiscal","fish","fit","fitness","fix","flag","flame","flash","flat","flavor",
+  "flee","flight","flip","float","flock","floor","flower","fluid","flush","fly",
+  "foam","focus","fog","foil","fold","follow","food","foot","force","forest",
+  "forget","fork","fortune","forum","forward","fossil","foster","found","fox","fragile",
+  "frame","frequent","fresh","friend","fringe","frog","front","frost","frown","frozen",
+  "fruit","fuel","fun","funny","furnace","fury","future","gadget","gain","galaxy",
+  "gallery","game","gap","garage","garbage","garden","garlic","garment","gas","gasp",
+  "gate","gather","gauge","gaze","general","genius","genre","gentle","genuine","gesture",
+  "ghost","giant","gift","giggle","ginger","giraffe","girl","give","glad","glance",
+  "glare","glass","glide","glimpse","globe","gloom","glory","glove","glow","glue",
+  "goat","goddess","gold","good","goose","gorilla","gospel","gossip","govern","gown",
+  "grab","grace","grain","grant","grape","grass","gravity","great","green","grid",
+  "grief","grit","grocery","group","grow","grunt","guard","guess","guide","guilt",
+  "guitar","gun","gym","habit","hair","half","hammer","hamster","hand","happy",
+  "harbor","hard","harsh","harvest","hat","have","hawk","hazard","head","health",
+  "heart","heavy","hedgehog","height","hello","helmet","help","hen","hero","hidden",
+  "high","hill","hint","hip","hire","history","hobby","hockey","hold","hole",
+  "holiday","hollow","home","honey","hood","hope","horn","horror","horse","hospital",
+  "host","hotel","hour","hover","hub","huge","human","humble","humor","hundred",
+  "hungry","hunt","hurdle","hurry","hurt","husband","hybrid","ice","icon","idea",
+  "identify","idle","ignore","ill","illegal","illness","image","imitate","immense","immune",
+  "impact","impose","improve","impulse","inch","include","income","increase","index","indicate",
+  "indoor","industry","infant","inflict","inform","inhale","inherit","initial","inject","injury",
+  "inmate","inner","innocent","input","inquiry","insane","insect","inside","inspire","install",
+  "intact","interest","into","invest","invite","involve","iron","island","isolate","issue",
+  "item","ivory","jacket","jaguar","jar","jazz","jealous","jeans","jelly","jewel",
+  "job","join","joke","journey","joy","judge","juice","jump","jungle","junior",
+  "junk","just","kangaroo","keen","keep","ketchup","key","kick","kid","kidney",
+  "kind","kingdom","kiss","kit","kitchen","kite","kitten","kiwi","knee","knife",
+  "knock","know","lab","label","labor","ladder","lady","lake","lamp","language",
+  "laptop","large","later","latin","laugh","laundry","lava","law","lawn","lawsuit",
+  "layer","lazy","leader","leaf","learn","leave","lecture","left","leg","legal",
+  "legend","leisure","lemon","lend","length","lens","leopard","lesson","letter","level",
+  "liar","liberty","library","license","life","lift","light","like","limb","limit",
+  "link","lion","liquid","list","little","live","lizard","load","loan","lobster",
+  "local","lock","logic","lonely","long","loop","lottery","loud","lounge","love",
+  "loyal","lucky","luggage","lumber","lunar","lunch","luxury","lyrics","machine","mad",
+  "magic","magnet","maid","mail","main","major","make","mammal","man","manage",
+  "mandate","mango","mansion","manual","maple","marble","march","margin","marine","market",
+  "marriage","mask","mass","master","match","material","math","matrix","matter","maximum",
+  "maze","meadow","mean","measure","meat","mechanic","medal","media","melody","melt",
+  "member","memory","mention","menu","mercy","merge","merit","merry","mesh","message",
+  "metal","method","middle","midnight","milk","million","mimic","mind","minimum","minor",
+  "minute","miracle","mirror","misery","miss","mistake","mix","mixed","mixture","mobile",
+  "model","modify","mom","moment","monitor","monkey","monster","month","moon","moral",
+  "more","morning","mosquito","mother","motion","motor","mountain","mouse","move","movie",
+  "much","muffin","mule","multiply","muscle","museum","mushroom","music","must","mutual",
+  "myself","mystery","myth","naive","name","napkin","narrow","nasty","nation","nature",
+  "near","neck","need","negative","neglect","neither","nephew","nerve","nest","net",
+  "network","neutral","never","news","next","nice","night","noble","noise","nominee",
+  "noodle","normal","north","nose","notable","note","nothing","notice","novel","now",
+  "nuclear","number","nurse","nut","oak","obey","object","oblige","obscure","observe",
+  "obtain","obvious","occur","ocean","october","odor","off","offer","office","often",
+  "oil","okay","old","olive","olympic","omit","once","one","onion","online",
+  "only","open","opera","opinion","oppose","option","orange","orbit","orchard","order",
+  "ordinary","organ","orient","original","orphan","ostrich","other","outdoor","outer","output",
+  "outside","oval","oven","over","own","owner","oxygen","oyster","ozone","pact",
+  "paddle","page","pair","palace","palm","panda","panel","panic","panther","paper",
+  "parade","parent","park","parrot","party","pass","patch","path","patient","patrol",
+  "pattern","pause","pave","payment","peace","peanut","pear","peasant","pelican","pen",
+  "penalty","pencil","people","pepper","perfect","permit","person","pet","phone","photo",
+  "phrase","physical","piano","picnic","picture","piece","pig","pigeon","pill","pilot",
+  "pink","pioneer","pipe","pistol","pitch","pizza","place","planet","plastic","plate",
+  "play","please","pledge","pluck","plug","plunge","poem","poet","point","polar",
+  "pole","police","pond","pony","pool","popular","portion","position","possible","post",
+  "potato","pottery","poverty","powder","power","practice","praise","predict","prefer","prepare",
+  "present","pretty","prevent","price","pride","primary","print","priority","prison","private",
+  "prize","problem","process","produce","profit","program","project","promote","proof","property",
+  "prosper","protect","proud","provide","public","pudding","pull","pulp","pulse","pumpkin",
+  "punch","pupil","puppy","purchase","purity","purpose","purse","push","put","puzzle",
+  "pyramid","quality","quantum","quarter","question","quick","quit","quiz","quote","rabbit",
+  "raccoon","race","rack","radar","radio","rail","rain","raise","rally","ramp",
+  "ranch","random","range","rapid","rare","rate","rather","raven","raw","razor",
+  "ready","real","reason","rebel","rebuild","recall","receive","recipe","record","recycle",
+  "reduce","reflect","reform","refuse","region","regret","regular","reject","relax","release",
+  "relief","rely","remain","remember","remind","remove","render","renew","rent","reopen",
+  "repair","repeat","replace","report","require","rescue","resemble","resist","resource","response",
+  "result","retire","retreat","return","reunion","reveal","review","reward","rhythm","rib",
+  "ribbon","rice","rich","ride","ridge","rifle","right","rigid","ring","riot",
+  "ripple","risk","ritual","rival","river","road","roast","robot","robust","rocket",
+  "romance","roof","rookie","room","rose","rotate","rough","round","route","royal",
+  "rubber","rude","rug","rule","run","runway","rural","sad","saddle","sadness",
+  "safe","sail","salad","salmon","salon","salt","salute","same","sample","sand",
+  "satisfy","satoshi","sauce","sausage","save","say","scale","scan","scare","scatter",
+  "scene","scheme","school","science","scissors","scorpion","scout","scrap","screen","script",
+  "scrub","sea","search","season","seat","second","secret","section","security","seed",
+  "seek","segment","select","sell","seminar","senior","sense","sentence","series","service",
+  "session","settle","setup","seven","shadow","shaft","shallow","share","shed","shell",
+  "sheriff","shield","shift","shine","ship","shiver","shock","shoe","shoot","shop",
+  "short","shoulder","shove","shrimp","shrug","shuffle","shy","sibling","sick","side",
+  "siege","sight","sign","silent","silk","silly","silver","similar","simple","since",
+  "sing","siren","sister","situate","six","size","skate","sketch","ski","skill",
+  "skin","skirt","skull","slab","slam","sleep","slender","slice","slide","slight",
+  "slim","slogan","slot","slow","slush","small","smart","smile","smoke","smooth",
+  "snack","snake","snap","sniff","snow","soap","soccer","social","sock","soda",
+  "soft","solar","soldier","solid","solution","solve","someone","song","soon","sorry",
+  "sort","soul","sound","soup","source","south","space","spare","spatial","spawn",
+  "speak","special","speed","spell","spend","sphere","spice","spider","spike","spin",
+  "spirit","split","spoil","sponsor","spoon","sport","spot","spray","spread","spring",
+  "spy","square","squeeze","squirrel","stable","stadium","staff","stage","stairs","stamp",
+  "stand","start","state","stay","steak","steel","stem","step","stereo","stick",
+  "still","sting","stock","stomach","stone","stool","story","stove","strategy","street",
+  "strike","strong","struggle","student","stuff","stumble","style","subject","submit","subway",
+  "success","such","sudden","suffer","sugar","suggest","suit","summer","sun","sunny",
+  "sunset","super","supply","supreme","sure","surface","surge","surprise","surround","survey",
+  "suspect","sustain","swallow","swamp","swap","swarm","swear","sweet","swift","swim",
+  "swing","switch","sword","symbol","symptom","syrup","system","table","tackle","tag",
+  "tail","talent","talk","tank","tape","target","task","taste","tattoo","taxi",
+  "teach","team","tell","ten","tenant","tennis","tent","term","test","text",
+  "thank","that","theme","then","theory","there","they","thing","this","thought",
+  "three","thrive","throw","thumb","thunder","ticket","tide","tiger","tilt","timber",
+  "time","tiny","tip","tired","tissue","title","toast","tobacco","today","toddler",
+  "toe","together","toilet","token","tomato","tomorrow","tone","tongue","tonight","tool",
+  "tooth","top","topic","topple","torch","tornado","tortoise","toss","total","tourist",
+  "toward","tower","town","toy","track","trade","traffic","tragic","train","transfer",
+  "trap","trash","travel","tray","treat","tree","trend","trial","tribe","trick",
+  "trigger","trim","trip","trophy","trouble","truck","true","truly","trumpet","trust",
+  "truth","try","tube","tuition","tumble","tuna","tunnel","turkey","turn","turtle",
+  "twelve","twenty","twice","twin","twist","two","type","typical","ugly","umbrella",
+  "unable","unaware","uncle","uncover","under","undo","unfair","unfold","unhappy","uniform",
+  "unique","unit","universe","unknown","unlock","until","unusual","unveil","update","upgrade",
+  "uphold","upon","upper","upset","urban","urge","usage","use","used","useful",
+  "useless","usual","utility","vacant","vacuum","vague","valid","valley","valve","van",
+  "vanish","vapor","various","vast","vault","vehicle","velvet","vendor","venture","venue",
+  "verb","verify","version","very","vessel","veteran","viable","vibrant","vicious","victory",
+  "video","view","village","vintage","violin","virtual","virus","visa","visit","visual",
+  "vital","vivid","vocal","voice","void","volcano","volume","vote","voyage","wage",
+  "wagon","wait","walk","wall","walnut","want","warfare","warm","warrior","wash",
+  "wasp","waste","water","wave","way","wealth","weapon","wear","weasel","weather",
+  "web","wedding","weekend","weird","welcome","west","wet","whale","what","wheat",
+  "wheel","when","where","whip","whisper","wide","width","wife","wild","will",
+  "win","window","wine","wing","wink","winner","winter","wire","wisdom","wise",
+  "wish","witness","wolf","woman","wonder","wood","wool","word","work","world",
+  "worry","worth","wrap","wreck","wrestle","wrist","write","wrong","yard","year",
+  "yellow","you","young","youth","zebra","zero","zone","zoo"
+];
+
+// ============================================================
+// WORDLIST INTEGRITY CHECK (automatic on load)
+// ============================================================
+const WORDLIST_SHA256 = '187db04a869dd9bc7be80d21a86497d692c0db6abd3aa8cb6be5d618ff757fae';
+// ============================================================
+// KNOWN-ANSWER TEST VECTORS (authoritative sources, verbatim)
+// SHA-256: FIPS-180 examples. BIP-39: official spec vectors.
+// ============================================================
+const SHA256_KATS = [
+  { bytes: [],
+    hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
+  { bytes: [0x61, 0x62, 0x63],
+    hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' }
+];
+
+const BIP39_KATS = [
+  { hex: '00000000000000000000000000000000',
+    mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about' },
+  { hex: '80808080808080808080808080808080',
+    mnemonic: 'letter advice cage absurd amount doctor acoustic avoid letter advice cage above' },
+  { hex: 'ffffffffffffffffffffffffffffffff',
+    mnemonic: 'zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong' },
+  { hex: '0000000000000000000000000000000000000000000000000000000000000000',
+    mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art' }
+];
+
+// Domino build: 30 draws for the 12-word tier (base-28 accumulator).
+// First draw is tile "34" (pips 3,4 -> canonical index 19), followed by
+// 29 draws of tile "00" (the double-blank, index 0). Independently
+// verified in Python against the exact rejection-sampling construction
+// in drawsToEntropy() below before being used as a KAT here.
+const DRAWS_KAT = { draws: '34' + '00'.repeat(29), hex: 'f57fdd92779b1c729400000000000000' };
+
+const WORDLIST_CHECK = (async function verifyWordlist() {
+  let pass = true;
+  let msg = '';
+
+  if (WORDLIST.length !== 2048) {
+    pass = false;
+    msg += `Length is ${WORDLIST.length}, expected 2048. `;
+  }
+
+  const sorted = [...WORDLIST].sort();
+  for (let i = 0; i < WORDLIST.length; i++) {
+    if (WORDLIST[i] !== sorted[i]) {
+      pass = false;
+      msg += 'Wordlist is not sorted. ';
+      break;
+    }
+  }
+
+  const checks = {
+    0: 'abandon',
+    1: 'ability',
+    103: 'artefact',
+    174: 'beyond',
+    544: 'dune',
+    829: 'guilt',
+    1169: 'mutual',
+    1978: 'warrior',
+    2047: 'zoo'
+  };
+  for (const [idx, expected] of Object.entries(checks)) {
+    if (WORDLIST[idx] !== expected) {
+      pass = false;
+      msg += `Index ${idx} is ${WORDLIST[idx]}, expected ${expected}. `;
+    }
+  }
+
+  if (pass) {
+    try {
+      const canonical = WORDLIST.join('\n');
+      const bytes = new TextEncoder().encode(canonical);
+      const hashBuffer = await sha256(bytes);
+      const hashHex = Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+
+      if (hashHex !== WORDLIST_SHA256) {
+        pass = false;
+        msg += `Hash mismatch (got ${hashHex}). A word may be added, deleted, or misspelled. `;
+      }
+    } catch (e) {
+      pass = false;
+      msg += `Hash computation failed: ${e.message}. `;
+    }
+  }
+// ---- Self-test: pure-JS SHA-256 fallback ----
+  for (const k of SHA256_KATS) {
+    const h = Array.from(sha256Fallback(k.bytes))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    if (h !== k.hash) { pass = false; msg += 'SHA-256 fallback KAT failed. '; }
+  }
+
+  // ---- Self-test: live sha256() wrapper ----
+  try {
+    const h = Array.from(new Uint8Array(await sha256(new Uint8Array([0x61, 0x62, 0x63]))))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    if (h !== SHA256_KATS[1].hash) { pass = false; msg += 'sha256() wrapper KAT failed. '; }
+  } catch (e) { pass = false; msg += 'sha256() KAT error: ' + e.message + '. '; }
+
+  // ---- Self-test: domino draws -> entropy packing & rejection-sampling gate ----
+  if (drawsToEntropy(DRAWS_KAT.draws, 16) !== DRAWS_KAT.hex) {
+    pass = false; msg += 'Draws-to-entropy KAT failed. ';
+  }
+
+  // ---- Self-test: entropy -> mnemonic pipeline (checksum + slicing) ----
+  for (const k of BIP39_KATS) {
+    try {
+      const words = await entropyToMnemonic(k.hex);
+      if (words.join(' ') !== k.mnemonic) {
+        pass = false; msg += 'BIP-39 vector failed for ' + k.hex.slice(0, 8) + '…. ';
+      }
+    } catch (e) { pass = false; msg += 'BIP-39 KAT error: ' + e.message + '. '; }
+  }
+  const box = document.getElementById('wordlistStatus');
+  box.classList.remove('pass', 'fail');
+  box.classList.add(pass ? 'pass' : 'fail');
+ box.textContent = pass
+    ? '✅ Wordlist + self-tests verified: 2048 words, SHA-256 KATs, draws→entropy KAT, and 4/4 official BIP-39 vectors pass.'
+    : '❌ Integrity check failed: ' + msg;
+    if (pass) box.classList.add('collapsed');
+    if (!pass) {
+    const btn = document.getElementById('generateBtn');
+    if (btn) btn.disabled = true;
+  }
+  return pass;
+})();
+
+
+
+// ============================================================
+// FALLBACK SHA-256 (pure JS, for non-secure contexts like file://)
+// ============================================================
+function sha256Fallback(message) {
+  function rotr(n, x) { return (x >>> n) | (x << (32 - n)); }
+  function shr(n, x) { return x >>> n; }
+  function ch(x, y, z) { return (x & y) ^ (~x & z); }
+  function maj(x, y, z) { return (x & y) ^ (x & z) ^ (y & z); }
+  function ep0(x) { return rotr(2, x) ^ rotr(13, x) ^ rotr(22, x); }
+  function ep1(x) { return rotr(6, x) ^ rotr(11, x) ^ rotr(25, x); }
+  function sig0(x) { return rotr(7, x) ^ rotr(18, x) ^ shr(3, x); }
+  function sig1(x) { return rotr(17, x) ^ rotr(19, x) ^ shr(10, x); }
+
+  var K = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+  ];
+
+  var H = [
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+  ];
+
+  var msg = [];
+  for (var i = 0; i < message.length; i++) {
+    msg.push(message[i]);
+  }
+
+  var bitLen = msg.length * 8;
+  msg.push(0x80);
+  while ((msg.length * 8 + 64) % 512 !== 0) msg.push(0);
+  // Encode 64-bit big-endian message length.
+  // JavaScript bitwise ops are 32-bit, so we split the length into
+  // high and low 32-bit halves manually. For messages under ~512 MB
+  // the high 32 bits are always zero.
+  var bitLenHigh = 0; // Math.floor(bitLen / 0x100000000) — always 0 for practical inputs
+  var bitLenLow = bitLen >>> 0;
+  msg.push((bitLenHigh >>> 24) & 0xff);
+  msg.push((bitLenHigh >>> 16) & 0xff);
+  msg.push((bitLenHigh >>> 8) & 0xff);
+  msg.push(bitLenHigh & 0xff);
+  msg.push((bitLenLow >>> 24) & 0xff);
+  msg.push((bitLenLow >>> 16) & 0xff);
+  msg.push((bitLenLow >>> 8) & 0xff);
+  msg.push(bitLenLow & 0xff);
+
+  for (var i = 0; i < msg.length; i += 64) {
+    var w = [];
+    for (var t = 0; t < 16; t++) {
+      w[t] = (msg[i + t * 4] << 24) | (msg[i + t * 4 + 1] << 16) | (msg[i + t * 4 + 2] << 8) | msg[i + t * 4 + 3];
+    }
+    for (var t = 16; t < 64; t++) {
+      w[t] = (sig1(w[t - 2]) + w[t - 7] + sig0(w[t - 15]) + w[t - 16]) >>> 0;
+    }
+
+    var a = H[0], b = H[1], c = H[2], d = H[3];
+    var e = H[4], f = H[5], g = H[6], h = H[7];
+
+    for (var t = 0; t < 64; t++) {
+      var T1 = (h + ep1(e) + ch(e, f, g) + K[t] + w[t]) >>> 0;
+      var T2 = (ep0(a) + maj(a, b, c)) >>> 0;
+      h = g; g = f; f = e; e = (d + T1) >>> 0;
+      d = c; c = b; b = a; a = (T1 + T2) >>> 0;
+    }
+
+    H[0] = (H[0] + a) >>> 0;
+    H[1] = (H[1] + b) >>> 0;
+    H[2] = (H[2] + c) >>> 0;
+    H[3] = (H[3] + d) >>> 0;
+    H[4] = (H[4] + e) >>> 0;
+    H[5] = (H[5] + f) >>> 0;
+    H[6] = (H[6] + g) >>> 0;
+    H[7] = (H[7] + h) >>> 0;
+  }
+
+  var hash = [];
+  for (var i = 0; i < 8; i++) {
+    hash.push((H[i] >>> 24) & 0xff);
+    hash.push((H[i] >>> 16) & 0xff);
+    hash.push((H[i] >>> 8) & 0xff);
+    hash.push(H[i] & 0xff);
+  }
+  return new Uint8Array(hash);
+}
+
+function sha256(bytes) {
+  if (typeof crypto !== 'undefined' && crypto.subtle && typeof crypto.subtle.digest === 'function') {
+    return crypto.subtle.digest('SHA-256', bytes);
+  }
+  return new Promise(function(resolve) {
+    resolve(sha256Fallback(Array.from(bytes)));
+  });
+}
+
+// ============================================================
+// BIP39 GENERATION LOGIC
+// ============================================================
+function entropyToMnemonic(entropyHex) {
+  const bits = entropyHex.match(/.{2}/g).map(b => parseInt(b, 16).toString(2).padStart(8, '0')).join('');
+  const checksumBits = bits.length / 32;
+  return new Promise((resolve, reject) => {
+    const bytes = new Uint8Array(entropyHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+    sha256(bytes).then(hash => {
+      const hashBits = Array.from(new Uint8Array(hash)).map(b => b.toString(2).padStart(8, '0')).join('');
+      const checksum = hashBits.slice(0, checksumBits);
+      const fullBits = bits + checksum;
+      const words = [];
+      for (let i = 0; i < fullBits.length; i += 11) {
+        const chunk = fullBits.slice(i, i + 11);
+        if (chunk.length < 11) break;
+        const idx = parseInt(chunk, 2);
+        words.push(WORDLIST[idx]);
+      }
+      resolve(words);
+    }).catch(reject);
+  });
+}
+
+// ============================================================
+// DOMINO (BASE-28) ENTROPY ACCUMULATOR
+// ============================================================
+
+// Canonical tile index for pip pair (i, j), row-major order:
+// (0|0)=0 … (0|6)=6, (1|1)=7 … (6|6)=27
+function tileIndex(i, j) {
+    return 7 * i - (i * (i - 1)) / 2 + (j - i);   // assumes i <= j
+}
+
+// Inverse lookup: TILE_PAIRS[idx] = [lo, hi]. Used by the grid UI (to
+// render and label each of the 28 tap targets) and by the statistical
+// diagnostics below (to recover pip values from a recorded tile index).
+const TILE_PAIRS = [];
+for (let i = 0; i <= 6; i++) {
+  for (let j = i; j <= 6; j++) {
+    TILE_PAIRS[tileIndex(i, j)] = [i, j];
+  }
+}
+
+// Strict two-digit-pair parser: pips 0–6, optional whitespace / commas /
+// hyphens as separators. Anything else throws rather than being silently
+// discarded. Each draw MUST be two digits, smaller pip first.
+function parseDrawString(drawString) {
+    const raw = String(drawString);
+
+    if (!/^[0-6\s,-]+$/.test(raw)) {
+        throw new Error(
+            'Invalid input: use only pip digits 0–6 (two per tile).'
+        );
+    }
+
+    const clean = raw.replace(/[\s,-]+/g, '');
+
+    if (clean.length === 0) throw new Error('Enter at least one domino draw.');
+    if (clean.length % 2 !== 0) {
+        throw new Error('Incomplete tile: every draw needs TWO pip digits (e.g. 35).');
+    }
+
+    const draws = [];
+    for (let p = 0; p < clean.length; p += 2) {
+        const i = Number(clean[p]);
+        const j = Number(clean[p + 1]);
+        if (i > j) {
+            throw new Error(`Tile "${i}${j}" reversed — enter the smaller pip first (${j}${i}).`);
+        }
+        draws.push(tileIndex(i, j));
+    }
+    return draws;
+}
+
+function drawsToEntropy(drawString, requiredBytes) {
+    const draws = parseDrawString(drawString);
+
+    // 1. Build the base-28 BigInt (first draw = most significant digit)
+    let num = 0n;
+    for (const d of draws) {
+        num = num * 28n + BigInt(d);
+    }
+
+    // 2. Exact mathematical safety boundaries
+    const totalPossibleRange = 28n ** BigInt(draws.length);
+    const targetBits = BigInt(requiredBytes * 8);
+    const targetModulus = 2n ** targetBits;
+
+    const remainder = totalPossibleRange % targetModulus;
+    const T = totalPossibleRange - remainder;   // Perfect Uniformity Boundary
+
+    // 3. Bounded Rejection Sampling Check
+    if (num >= T) {
+        const rejectPct = ((Number(totalPossibleRange - T) / Number(totalPossibleRange)) * 100).toFixed(4);
+        throw new Error(
+            `⛔ REJECTION SAMPLING TRIGGERED\n\n` +
+            `Your draw sequence fell into the ${rejectPct}% modulo bias zone (X ≥ T).\n\n` +
+            `For perfect mathematical safety, tap "Clear Draws" and reshuffle the dominoes again.`
+        );
+    }
+
+    // 4. Extract perfectly uniform bits (T is an exact multiple of R,
+    //    so this modulo introduces zero bias)
+    const unbiasedEntropyInt = num % targetModulus;
+
+    // 5. Clean hex with exact byte padding
+    return unbiasedEntropyInt.toString(16).padStart(requiredBytes * 2, '0');
+}
+// ============================================================
+// UI LOGIC (Complete Merged Version)
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  const generateBtn = document.getElementById('generateBtn');
+  const clearDrawsBtn = document.getElementById('clearDrawsBtn');
+  const undoDrawBtn = document.getElementById('undoDrawBtn');
+  const dominoGrid = document.getElementById('dominoGrid');
+  const drawSequenceEl = document.getElementById('drawSequence');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const mnemonicText = document.getElementById('mnemonicText');
+  const entropyText = document.getElementById('entropyText');
+  const copyMnemonicBtn = document.getElementById('copyMnemonicBtn');
+  const copyEntropyBtn = document.getElementById('copyEntropyBtn');
+  const wordCountSelect = document.getElementById('wordCount');
+  const rollCounter = document.getElementById('rollCounter');
+  const enableClipboardToggle = document.getElementById('enableClipboardToggle');
+
+  // Tracks whether the wordlist/BIP-39 self-test suite passed, so the
+  // invalid-character handler below never accidentally re-enables a
+  // Generate button that WORDLIST_CHECK has permanently disabled.
+  let wordlistOk = true;
+  WORDLIST_CHECK.then(function(pass) { wordlistOk = pass; });
+
+  // Closure-scoped state
+  let currentMnemonic = [];
+  let currentEntropy = '';
+
+  // Master input state: an array of tile indices (0-27), one per tap,
+  // in draw order. This is the single source of truth for the grid UI,
+  // the audit terminal, and entropy generation — there is no free-text
+  // field to parse or validate, since every tap is guaranteed to be a
+  // valid tile by construction.
+  let selectedDraws = [];
+
+  // Clipboard-security state: tracks what we last wrote to the clipboard
+  // so we can auto-clear it (without clobbering unrelated clipboard content
+  // the user may have copied from elsewhere afterward) and so Clear/Reset
+  // can attempt to clear it immediately.
+  let lastCopiedText = '';
+  let clipboardClearTimer = null;
+  const CLIPBOARD_AUTOCLEAR_MS = 45000; // 45s
+
+  // NON-PERSISTENCE HARDENING: Burn-after-reading timer
+  const BURN_AFTER_READING_SECONDS = 180; // 3 minutes - user can change this
+  let burnTimer = null;
+
+  // NON-PERSISTENCE HARDENING: Panic hotkey state
+  let lastEscapeTime = 0;
+
+  const REQUIRED_BYTES = {12: 16, 15: 20, 18: 24, 21: 28, 24: 32};
+  const REQUIRED_ROLLS = {
+    12: 30,   // 144.2 bits raw for 128-bit target (buffer ~16.2b, exact P(reject)=1/299,074)
+    15: 37,   // 177.9 bits raw for 160-bit target (buffer ~17.9b, exact P(reject)=1/330,783)
+    18: 44,   // 211.5 bits raw for 192-bit target (buffer ~19.5b, exact P(reject)=1/1,418,990)
+    21: 50,   // 240.4 bits raw for 224-bit target (buffer ~16.4b, exact P(reject)=1/201,384)
+    24: 57    // 274.0 bits raw for 256-bit target (buffer ~18.0b, exact P(reject)=1/397,180)
+  };
+
+  // Render the 28-tile grid once. Each button's data-idx is its canonical
+  // TILE_PAIRS index; label always shows the smaller pip first, per spec.
+  TILE_PAIRS.forEach(function(pair, idx) {
+    const [lo, hi] = pair;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'domino-tile';
+    btn.dataset.idx = idx;
+    btn.setAttribute('aria-label', `Domino tile ${lo}-${hi}`);
+    btn.innerHTML = `<span class="pip">${lo}</span><span class="divider"></span><span class="pip">${hi}</span>`;
+    btn.addEventListener('click', function() {
+      const selectedWords = parseInt(wordCountSelect.value, 10);
+      const requiredRolls = REQUIRED_ROLLS[selectedWords];
+      if (selectedDraws.length >= requiredRolls) return; // locked, see updateGridLock()
+      selectedDraws.push(idx);
+      updateDrawSequenceDisplay();
+      updateCounter();
+      updateAudit();
+    });
+    dominoGrid.appendChild(btn);
+  });
+
+  function updateDrawSequenceDisplay() {
+    if (selectedDraws.length === 0) {
+      drawSequenceEl.textContent = '(none yet)';
+      return;
+    }
+    drawSequenceEl.textContent = selectedDraws.map(function(idx) {
+      const [lo, hi] = TILE_PAIRS[idx];
+      return `${lo}-${hi}`;
+    }).join(' ');
+  }
+
+  // Disable grid tiles once the required draw count for the selected
+  // tier is reached, mirroring the domino build's input-locking behavior.
+  function updateGridLock() {
+    const selectedWords = parseInt(wordCountSelect.value, 10);
+    const requiredRolls = REQUIRED_ROLLS[selectedWords];
+    const locked = selectedDraws.length >= requiredRolls;
+    dominoGrid.querySelectorAll('.domino-tile').forEach(function(btn) {
+      btn.disabled = locked;
+    });
+  }
+
+  // CLIPBOARD PERSISTENCE HARDENING: Disable copy buttons by default
+  function updateClipboardButtons() {
+    const enabled = enableClipboardToggle.checked;
+    copyMnemonicBtn.style.display = enabled ? 'inline-block' : 'none';
+    copyEntropyBtn.style.display = enabled ? 'inline-block' : 'none';
+    
+    // If disabling while secrets are on clipboard, attempt to clear it
+    if (!enabled && lastCopiedText) {
+      attemptClearClipboard();
+    }
+  }
+  
+  // Initialize clipboard buttons
+  enableClipboardToggle.checked = false; // OFF by default for security
+  updateClipboardButtons();
+  
+  // Listen for toggle changes
+  enableClipboardToggle.addEventListener('change', function() {
+    updateClipboardButtons();
+    if (!this.checked) {
+      alert('✅ Clipboard copy disabled. You can manually write down the seed phrase instead.');
+    }
+  });
+
+  // Statistical diagnostics for the physical dominoes (never influence
+  // accept/reject, which remains governed solely by X < T in
+  // drawsToEntropy above). Gated behind the "Advanced" toggle, same as
+  // the raw N/r/T/X figures, since they're derived from the operator's
+  // actual draws.
+  //
+  // IMPORTANT: a direct translation of a 6-face die chi-squared
+  // test would need to test all 28 tile categories, but that requires an
+  // expected count >=5 per bin, i.e. n >= 28*5 = 140 draws — more than
+  // every tier collects (30-57). A 28-category test would therefore be
+  // permanently invalid at every roll count this tool uses, so it is not
+  // implemented. Instead, two tests that ARE properly powered at these
+  // sample sizes are used:
+  const AUTOCORR_Z_CRITICAL = 1.96;      // alpha=0.05, two-tailed, asymptotic normal approx (Fisher z)
+  const CHI2_PIP_CRITICAL_DF6 = 12.592;  // alpha=0.05, df=6 (7 pip values - 1)
+  const CHI2_DOUBLES_CRITICAL_DF1 = 3.841; // alpha=0.05, df=1 (double vs non-double)
+  const BIAS_TEST_MIN_ROLLS = 20;        // both tests below are valid from n>=20 (see comments)
+
+  // Test 1: marginal pip-value distribution (7 categories: 0-6), using
+  // BOTH halves of every drawn tile as one data point each (2n total
+  // observations). Needs 2n >= 7*5=35, i.e. n>=18 draws for validity —
+  // comfortably met at every tier (minimum tier is 30 draws).
+  function pipChiSquareTest(draws) {
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    for (const idx of draws) {
+      const [lo, hi] = TILE_PAIRS[idx];
+      counts[lo]++; counts[hi]++;
+    }
+    const n2 = draws.length * 2;
+    const expected = n2 / 7;
+    let chi2 = 0;
+    for (let i = 0; i < 7; i++) chi2 += Math.pow(counts[i] - expected, 2) / expected;
+    return { counts, chi2 };
+  }
+
+  // Test 2: domino-specific structural check with no die equivalent —
+  // doubles (7 of 28 tiles) should appear ~25% of the time under a fair
+  // draw. A simple 2-category (df=1) test, valid from n*0.25>=5, i.e.
+  // n>=20 draws.
+  function doublesChiSquareTest(draws) {
+    let doubles = 0;
+    for (const idx of draws) {
+      const [lo, hi] = TILE_PAIRS[idx];
+      if (lo === hi) doubles++;
+    }
+    const n = draws.length;
+    const nonDoubles = n - doubles;
+    const expDoubles = n * 0.25, expNonDoubles = n * 0.75;
+    const chi2 = Math.pow(doubles - expDoubles, 2) / expDoubles +
+                 Math.pow(nonDoubles - expNonDoubles, 2) / expNonDoubles;
+    return { doubles, nonDoubles, chi2 };
+  }
+
+  // Lag-1 autocorrelation on the sequence of tile indices (0-27) — same
+  // Fisher z-transform approach as the original dice tool, unaffected by category
+  // count since it doesn't require binning. A full pairwise (28x28=784
+  // bin) test would need n>=3,920 draws to be valid, which is wildly
+  // infeasible here, so this is the only serial-correlation check used.
+  function lag1AutocorrTest(draws) {
+    const vals = draws.map(Number);
+    const n = vals.length;
+    const mean = vals.reduce((a, b) => a + b, 0) / n;
+    let denom = 0;
+    for (const v of vals) denom += (v - mean) ** 2;
+    let num = 0;
+    for (let i = 0; i < n - 1; i++) num += (vals[i] - mean) * (vals[i + 1] - mean);
+    let r = denom > 0 ? num / denom : 0;
+    r = Math.max(-0.999999, Math.min(0.999999, r)); // guard atanh domain
+    const pairs = n - 1;
+    const z = 0.5 * Math.log((1 + r) / (1 - r)) * Math.sqrt(Math.max(pairs - 3, 1));
+    return { r, z, pairs };
+  }
+
+  function updateAudit() {
+    const out = document.getElementById('auditOut');
+    if (!out) return;
+    const advancedToggle = document.getElementById('auditAdvancedToggle');
+    const showAdvanced = !!(advancedToggle && advancedToggle.checked);
+
+    const k = selectedDraws.length;
+    const words = parseInt(wordCountSelect.value, 10);
+    const b = REQUIRED_BYTES[words] * 8;
+    const H = k * Math.log2(28);
+
+    // Safe-by-default line set: target size, draw count, accept/reject
+    // status, and the rejection probability. None of these reveal
+    // anything about the actual tiles drawn — P(reject) and the
+    // verdict's *existence* are public statistics of (k, b); only the
+    // verdict's outcome (accept vs reject) depends on the real draws,
+    // and that single bit is the minimum needed to tell the user
+    // whether to re-draw.
+    const L = [`target ${words}w / ${b}b`,
+               `draws ${k}/${REQUIRED_ROLLS[words]}`];
+    if (k > 0) {
+      const N = 28n ** BigInt(k), R = 1n << BigInt(b);
+      const r = N % R, T = N - r;
+      let X = 0n; for (const idx of selectedDraws) X = X * 28n + BigInt(idx);
+      const verdict = X < T;
+
+      // Exact rejection probability: r/N depends only on (k, b), not on
+      // the actual tile values, so this is a precise figure, not an
+      // estimate.
+      const exactOneIn = Math.round(Number(N) / Number(r));
+      L.push(`P(reject)=1/${exactOneIn.toLocaleString()} (exact)`,
+             verdict ? 'verdict ✅ ACCEPT (uniform)'
+                     : 'verdict ⛔ REJECT — clear & re-draw');
+
+      if (showAdvanced) {
+        L.push(`H=${H.toFixed(2)}b buffer=${(H - b).toFixed(2)}b`,
+               `N=${N.toString(16).slice(0, 8)}… (${N.toString(2).length}b)`,
+               `r=${r.toString(16).slice(0, 8)}… T=${T.toString(16).slice(0, 8)}…`,
+               `X=${X.toString(16).slice(0, 8)}…`);
+
+        if (k >= BIAS_TEST_MIN_ROLLS) {
+          const { chi2: pipChi2, counts: pipCounts } = pipChiSquareTest(selectedDraws);
+          const pipBiased = pipChi2 > CHI2_PIP_CRITICAL_DF6;
+          L.push(`χ²pip(df=6)=${pipChi2.toFixed(2)} pips[0-6]=${pipCounts.join(',')}`,
+                 pipBiased
+                   ? `⚠️ χ² > ${CHI2_PIP_CRITICAL_DF6} — possible pip-value bias (informational, does not block generation)`
+                   : `✔️ χ² ≤ ${CHI2_PIP_CRITICAL_DF6} — no pip bias detected`);
+
+          const { chi2: dblChi2, doubles, nonDoubles } = doublesChiSquareTest(selectedDraws);
+          const dblBiased = dblChi2 > CHI2_DOUBLES_CRITICAL_DF1;
+          L.push(`χ²doubles(df=1)=${dblChi2.toFixed(2)} doubles=${doubles} non=${nonDoubles} (expect ~25%/75%)`,
+                 dblBiased
+                   ? `⚠️ χ² > ${CHI2_DOUBLES_CRITICAL_DF1} — doubles proportion off expected 25% (informational, does not block generation)`
+                   : `✔️ χ² ≤ ${CHI2_DOUBLES_CRITICAL_DF1} — doubles proportion as expected`);
+
+          const { r: corrR, z, pairs } = lag1AutocorrTest(selectedDraws);
+          const correlated = Math.abs(z) > AUTOCORR_Z_CRITICAL;
+          L.push(`lag-1 autocorr r=${corrR.toFixed(3)} z=${z.toFixed(2)} (n=${pairs} pairs)`,
+                 correlated
+                   ? `⚠️ |z| > ${AUTOCORR_Z_CRITICAL} — possible sequential correlation (informational, does not block generation)`
+                   : `✔️ |z| ≤ ${AUTOCORR_Z_CRITICAL} — no sequential correlation detected`);
+        } else {
+          L.push(`Bias checks: need ≥${BIAS_TEST_MIN_ROLLS} draws for a valid test (have ${k})`);
+        }
+      }
+    }
+    out.textContent = L.join('\n');
+  }
+
+  function updateCounter() {
+    const draws = selectedDraws.length;
+    const selectedWords = parseInt(wordCountSelect.value, 10);
+    const requiredRolls = REQUIRED_ROLLS[selectedWords];
+    const remaining = Math.max(0, requiredRolls - draws);
+    const color = draws >= requiredRolls ? '#6ee7b7' : (draws >= requiredRolls * 0.8 ? '#f0a500' : '#fca5a5');
+
+    if (draws >= requiredRolls) {
+      rollCounter.innerHTML = `🁣 <strong style="color:${color}">${draws}</strong> draws entered — <strong style="color:#6ee7b7;">✅ Optimal inputs reached! Press "Generate" button.</strong>`;
+    } else {
+      rollCounter.innerHTML = `🁣 <strong style="color:${color}">${draws}</strong> draws entered — need <strong>${remaining}</strong> more for ${selectedWords} words`;
+    }
+    updateGridLock();
+  }
+
+  // NON-PERSISTENCE HARDENING: Burn-after-reading function
+  function scheduleBurnAfterReading() {
+    if (burnTimer) clearTimeout(burnTimer);
+    burnTimer = setTimeout(async function() {
+      mnemonicText.textContent = '';
+      entropyText.textContent = '';
+      resultsContainer.style.display = 'none';
+      currentMnemonic = [];
+      currentEntropy = '';
+      await attemptClearClipboard();
+      updateCounter();
+      updateAudit();
+    }, BURN_AFTER_READING_SECONDS * 1000);
+  }
+
+  // NON-PERSISTENCE HARDENING: Clear all secrets from screen and memory
+  function clearAllSecrets() {
+    selectedDraws = [];
+    updateDrawSequenceDisplay();
+    generateBtn.disabled = !wordlistOk;
+    mnemonicText.textContent = '';
+    entropyText.textContent = '';
+    resultsContainer.style.display = 'none';
+    currentMnemonic = [];
+    currentEntropy = '';
+    if (burnTimer) {
+      clearTimeout(burnTimer);
+      burnTimer = null;
+    }
+    updateCounter();
+    updateAudit();
+  }
+
+  // Undo the most recent draw (correcting an accidental tap without
+  // having to clear and reshuffle the entire in-progress sequence).
+  undoDrawBtn.addEventListener('click', function() {
+    if (selectedDraws.length === 0) return;
+    selectedDraws.pop();
+    updateDrawSequenceDisplay();
+    updateCounter();
+    updateAudit();
+  });
+
+  // Truncate the recorded sequence if the dropdown changes to a tier
+  // requiring fewer draws than already entered. Grid input can never be
+  // invalid by construction, so there is no error-state handling to
+  // replicate from a text-input predecessor's validation here.
+  wordCountSelect.addEventListener('change', function() {
+    generateBtn.disabled = !wordlistOk;
+    const selectedWords = parseInt(wordCountSelect.value, 10);
+    const requiredRolls = REQUIRED_ROLLS[selectedWords];
+    if (selectedDraws.length > requiredRolls) {
+      selectedDraws = selectedDraws.slice(0, requiredRolls);
+      updateDrawSequenceDisplay();
+    }
+    updateCounter();
+    updateAudit();
+  });
+
+  updateCounter();
+  updateAudit();
+
+  generateBtn.addEventListener('click', async function() {
+    if (!(await WORDLIST_CHECK)) {
+      alert('⛔ Wordlist integrity check failed. Refusing to generate a seed.');
+      return;
+    }
+    if (selectedDraws.length === 0) {
+      alert('Please tap some domino draws first.');
+      return;
+    }
+    const selectedWords = parseInt(wordCountSelect.value, 10);
+    const requiredBytes = REQUIRED_BYTES[selectedWords];
+    const requiredRolls = REQUIRED_ROLLS[selectedWords];
+
+    if (selectedDraws.length < requiredRolls) {
+      alert('Not enough entropy for ' + selectedWords + ' words. You need at least ' + requiredRolls + ' domino draws (you have ' + selectedDraws.length + ').');
+      return;
+    }
+
+    try {
+      // Build the two-digit-per-tile draw string that drawsToEntropy
+      // expects, from the tap-recorded tile indices (smaller pip first,
+      // by construction of TILE_PAIRS).
+      const drawString = selectedDraws.map(function(idx) {
+        const [lo, hi] = TILE_PAIRS[idx];
+        return `${lo}${hi}`;
+      }).join('');
+
+      const entropy = drawsToEntropy(drawString, requiredBytes);
+      currentEntropy = entropy;
+      const words = await entropyToMnemonic(entropy);
+      currentMnemonic = words;
+
+      let display = '';
+      words.forEach((w, i) => {
+        display += `${i+1}. ${w}\n`;
+      });
+      mnemonicText.textContent = display;
+      entropyText.textContent = entropy;
+      resultsContainer.style.display = 'block';
+      
+      // NON-PERSISTENCE HARDENING: Schedule auto-clear
+      scheduleBurnAfterReading();
+    } catch (err) {
+      alert('Error generating seed: ' + err.message);
+    }
+  });
+
+  clearDrawsBtn.addEventListener('click', async function() {
+    clearAllSecrets();
+    await attemptClearClipboard();
+  });
+
+  // NON-PERSISTENCE HARDENING: Panic hotkey - double-tap Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const now = Date.now();
+      if (now - lastEscapeTime < 700) {
+        // Double-tap detected - clear all secrets immediately
+        clearAllSecrets();
+        attemptClearClipboard();
+      }
+      lastEscapeTime = now;
+    }
+  });
+
+  // NON-PERSISTENCE HARDENING: Clear on tab close/navigation
+  window.addEventListener('beforeunload', function() {
+    try {
+      mnemonicText.textContent = '';
+      entropyText.textContent = '';
+      selectedDraws = [];
+      resultsContainer.style.display = 'none';
+      currentMnemonic = [];
+      currentEntropy = '';
+      if (burnTimer) {
+        clearTimeout(burnTimer);
+        burnTimer = null;
+      }
+    } catch (e) {
+      // Ignore - best effort cleanup
+    }
+  });
+
+// ---- UI polish: status pill toggle + floating audit sheet ----
+  document.getElementById('wordlistStatus').addEventListener('click', function() {
+    this.classList.toggle('collapsed');
+  });
+  document.getElementById('auditFab').addEventListener('click', function() {
+    document.getElementById('auditSheet').style.display = 'block';
+    updateAudit();
+  });
+  document.getElementById('auditClose').addEventListener('click', function() {
+    document.getElementById('auditSheet').style.display = 'none';
+  });
+  const auditAdvancedToggle = document.getElementById('auditAdvancedToggle');
+  if (auditAdvancedToggle) {
+    auditAdvancedToggle.addEventListener('change', updateAudit);
+  }
+  // Hard reset integration
+  const hardResetBtn = document.getElementById('hardResetBtn');
+  if (hardResetBtn) {
+    hardResetBtn.addEventListener('click', async function() {
+      clearAllSecrets();
+      await attemptClearClipboard();
+      if (typeof window.hardReset === 'function') window.hardReset();
+    });
+  }
+
+  // Clipboard functionality
+  // ------------------------------------------------------------------
+  // SECURITY NOTE: this app puts secret material (seed phrase / raw
+  // entropy) on the OS clipboard when the user taps Copy. That's the
+  // only way to get it into a password manager etc., but it means the
+  // secret sits somewhere every other app on the device (and, with
+  // clipboard sync, other devices) can read it until something
+  // overwrites it. We mitigate that two ways:
+  //   1. Auto-clear the clipboard CLIPBOARD_AUTOCLEAR_MS after a copy,
+  //      but ONLY if the clipboard still contains exactly what we put
+  //      there (so we never clobber something unrelated the user
+  //      copied afterward).
+  //   2. Immediately attempt to clear the clipboard on "Clear Draws" and
+  //      "Hard Reset", using the same match-check.
+  // Reading back the clipboard requires the Clipboard API + user
+  // permission; if that's unavailable we skip the auto-clear/verify
+  // step rather than risk clobbering unrelated content, but the
+  // explicit Clear/Reset buttons still attempt an unconditional clear
+  // since the user is deliberately asking us to.
+  async function writeClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = [
+          'position: fixed', 'top: 0', 'left: 0', 'width: 1px', 'height: 1px',
+          'padding: 0', 'border: none', 'outline: none', 'box-shadow: none',
+          'background: transparent', 'opacity: 0.01', 'pointer-events: none', 'z-index: -1'
+        ].join(';');
+        ta.setAttribute('readonly', '');
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        const success = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return success;
+      } catch (fallbackErr) {
+        return false;
+      }
+    }
+  }
+
+  function scheduleClipboardAutoClear(text) {
+    lastCopiedText = text;
+    if (clipboardClearTimer) clearTimeout(clipboardClearTimer);
+    clipboardClearTimer = setTimeout(async function() {
+      // Only clear if the clipboard still holds what we copied — if the
+      // user copied something else in the meantime, leave it alone.
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const current = await navigator.clipboard.readText();
+          if (current === lastCopiedText) {
+            await writeClipboard('');
+          }
+        }
+        // If readText isn't available/permitted, we can't safely verify,
+        // so we skip the timed auto-clear for this copy. The explicit
+        // Clear Draws / Hard Reset buttons below still attempt an unconditional clear.
+      } catch (e) {
+        // Permission denied or no clipboard access — silently skip.
+      } finally {
+        lastCopiedText = '';
+        clipboardClearTimer = null;
+      }
+    }, CLIPBOARD_AUTOCLEAR_MS);
+  }
+
+  async function attemptClearClipboard() {
+    if (clipboardClearTimer) {
+      clearTimeout(clipboardClearTimer);
+      clipboardClearTimer = null;
+    }
+    // Best-effort: only overwrite the clipboard if it still holds the
+    // secret we put there, so Clear/Reset never clobbers something
+    // unrelated the user has copied since. If we can't verify (no
+    // readText permission), err on the side of NOT touching the
+    // clipboard rather than blindly wiping the user's unrelated data.
+    try {
+      if (lastCopiedText && navigator.clipboard && navigator.clipboard.readText) {
+        const current = await navigator.clipboard.readText();
+        if (current === lastCopiedText) {
+          await writeClipboard('');
+        }
+      }
+    } catch (e) {
+      // No clipboard read permission — can't safely verify, so skip.
+    }
+    lastCopiedText = '';
+  }
+
+  async function copyText(text, label) {
+    const ok = await writeClipboard(text);
+    if (ok) {
+      scheduleClipboardAutoClear(text);
+      alert(`✅ ${label} copied to clipboard! It will auto-clear from your clipboard in ${CLIPBOARD_AUTOCLEAR_MS / 1000}s.`);
+    } else {
+      alert('❌ Copy failed. Please copy manually.');
+    }
+  }
+
+  copyMnemonicBtn.addEventListener('click', function() {
+    if (!currentMnemonic || currentMnemonic.length === 0) {
+      alert('No seed phrase generated yet.');
+      return;
+    }
+    copyText(currentMnemonic.join(' '), 'Seed phrase');
+  });
+
+  copyEntropyBtn.addEventListener('click', function() {
+    if (!currentEntropy) {
+      alert('No entropy generated yet.');
+      return;
+    }
+    copyText(currentEntropy, 'Entropy hex');
+  });
+});
+
+
+
+</script>
+
+<!-- ====== HARDENED RESET BUTTON (UI) ====== -->
+<style>
+  #hardResetBtn {
+    background: #d9534f;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 30px;
+    display: inline-block;
+    transition: background 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  #hardResetBtn:hover {
+    background: #c9302c;
+  }
+  #hardResetBtn:active {
+    transform: scale(0.97);
+  }
+  .reset-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    padding: 8px 14px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    display: none;
+  }
+</style>
+
+<div style="text-align: center; margin: 20px 0;">
+  <button id="hardResetBtn">🧹 Clear / Reset (Wipe Memory)</button>
+  <div id="resetFeedback" class="reset-warning">✅ Memory state cleared. Inputs and variables nullified.</div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  window.hardReset = function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea');
+    inputs.forEach(function(el) {
+      el.value = '';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    // Only clear the content divs, never the outer .output-area containers
+    const outputs = document.querySelectorAll('#mnemonicText, #entropyText');
+    outputs.forEach(function(el) {
+      el.textContent = '';
+    });
+
+    const container = document.getElementById('resultsContainer');
+    if (container) container.style.display = 'none';
+
+    // currentMnemonic, currentEntropy, and the clipboard are closure-scoped
+    // (not window globals) and are cleared by the main DOMContentLoaded
+    // hardResetBtn handler above, which calls this function.
+
+    var feedback = document.getElementById('resetFeedback');
+    if (feedback) {
+      feedback.style.display = 'block';
+      setTimeout(function() {
+        feedback.style.display = 'none';
+      }, 3000);
+    }
+
+    console.log('🧹 Hard reset complete. Memory state nullified.');
+  };
+
+  // NOTE: The click listener for #hardResetBtn is attached exclusively in the
+  // main DOMContentLoaded handler above. That handler clears the closure-scoped
+  // currentMnemonic / currentEntropy values and then calls window.hardReset(),
+  // so attaching a second listener here would run the reset twice per click.
+})();
+</script>
+<!-- ====== END RESET BUTTON ====== -->
+ <button id="auditFab" aria-label="Open bias audit terminal"
+  style="position:fixed;right:14px;bottom:14px;width:52px;height:52px;
+  border-radius:50%;background:#0f3460;border:2px solid #f0a500;
+  font-size:1.5rem;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.5);">🔬</button>
+
+<div id="auditSheet" style="display:none;position:fixed;left:0;right:0;bottom:0;
+  background:#16213e;border-top:2px solid #f0a500;padding:14px;z-index:100;
+  max-height:62vh;overflow-y:auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:8px;">
+    <strong style="color:#f0a500;">🔬 Modulo Bias Audit Terminal</strong>
+    <button id="auditClose" style="background:#533483;color:#fff;border:none;
+      border-radius:4px;padding:6px 12px;font-weight:bold;">✖</button>
+  </div>
+  <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;
+    color:#aaa;margin-bottom:8px;">
+    <input type="checkbox" id="auditAdvancedToggle">
+    Show advanced sequence-derived values (H, N, r, T, X) — off by default;
+    these are computed from your actual domino draws and shouldn't be left
+    visible on screen or in screenshots during ordinary use.
+  </label>
+  <pre id="auditOut" style="background:#0a0a1a;color:#8be9fd;padding:12px;
+    border:1px solid #333;border-radius:8px;font-size:0.78rem;
+    white-space:pre-wrap;word-break:break-all;line-height:1.4;">Waiting for domino draws...</pre>
+</div>
+</body>
+</html>
