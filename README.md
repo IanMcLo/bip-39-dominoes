@@ -4,6 +4,9 @@ A single-file, offline, cryptographically auditable BIP-39 seed phrase generator
 
 Adapted from the [BIP39 Dice Roll Seed Generator](https://github.com/IanMcLo/bip-39-dice), generalizing the same exact rejection-sampling construction from a fair 6-sided die (base-6) to a fair, with-replacement domino draw (base-28). Built for security purists: this tool uses **exact rejection sampling** to reduce modulo bias to mathematically **zero**, features on-load Known Answer Tests (KATs) that fail-closed, and includes a live Modulo Bias Audit Terminal with statistical draw-fairness checks tailored to the domino model, so you can verify the math yourself.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![HTML 100%](https://img.shields.io/badge/HTML-100%25-orange)]()
+
 ## 🛡️ Security & Features
 
 - **Zero Modulo Bias (Rejection Sampling):** The base-28 draw integer is mapped to the target $2^b$ space. If the integer falls into the remainder zone ($X \ge T$), the tool refuses to generate and asks you to clear and reshuffle.
