@@ -197,7 +197,7 @@ $|z| > 1.96$ (two-tailed $\alpha = 0.05$) is shown as ⚠️; otherwise ✔️. 
 
 - **Rejection Sampling, Not Truncation:** The implementation performs the accept/reject test before reduction. On rejection, the UI raises `⛔ REJECTION SAMPLING TRIGGERED` and disables generation; the operator must clear and re-draw.
 
-- **Elevated Draw Counts:** Minimum draw counts (30 for 12 words up to 57 for 24 words) provide the raw-entropy buffer that keeps rejection rare across all tiers (worst case roughly 1 in 45,592).
+- **Elevated Draw Counts:** Minimum draw counts (30 for 12 words up to 57 for 24 words) provide the raw-entropy buffer that keeps rejection rare across all tiers (worst case roughly 1 in 201,384).
 
 - **Canonical Tile Ordering:** Tiles are recorded with the smaller pip first. The UI enforces this: if the operator enters `5|3`, it is flagged as invalid with the message "enter smaller pip first." This prevents orientation-dependent encoding errors.
 
