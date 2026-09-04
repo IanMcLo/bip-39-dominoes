@@ -7,7 +7,12 @@ Adapted from the [BIP39 Dice Roll Seed Generator](https://github.com/IanMcLo/bip
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![HTML 100%](https://img.shields.io/badge/HTML-100%25-orange)]()
 
+
 ## 🛡️ Security & Features
+
+<p align="center">
+  <img src="image1.jpg" width="350" />
+</p>
 
 - **Zero Modulo Bias (Rejection Sampling):** The base-28 draw integer is mapped to the target $2^b$ space. If the integer falls into the remainder zone ($X \ge T$), the tool refuses to generate and asks you to clear and reshuffle.
 - **Tap-to-Draw Grid Input:** Every domino draw is entered by tapping one of 28 on-screen tiles (smaller pip value always shown first) rather than typing digits. Every tap is a valid, complete draw by construction — there is no free-text field and no invalid-input state to get wrong.
