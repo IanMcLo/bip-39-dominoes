@@ -47,6 +47,16 @@ sha256sum -c index.html.sha256
 
 **Option 2: Manual Hash** Hash your local `index.html` file using any trusted SHA-256 tool and compare it against the published hash in `index.html.sha256`.
 
+## Provenance & Signed Releases
+
+Release tags (September 2026 onward) are signed with the account SSH
+signing key — the same key covers all of IanMcLo's repositories.
+
+Fingerprint (SHA256): `6D+lcVxQsXH+3QK+x6luF5L7tdjajExZSKGJQuPcqZo`
+
+Verify: `git verify-tag <tag> --show-signature`
+Full scope & reporting policy: see SECURITY.md.
+
 ## 💻 Usage
 
 1. **Air-gap your device:** Disconnect from the internet.
