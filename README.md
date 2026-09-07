@@ -61,12 +61,13 @@ Full scope & reporting policy: see SECURITY.md.
 
 1. **Air-gap your device:** Disconnect from the internet.
 2. Open `index.html` in any modern browser.
-3. Wait for the green "✅ Wordlist + self-tests verified" pill to appear.
-4. Select your desired word count (12–24 words).
-5. Draw a tile from a well-shuffled standard 28-tile double-six domino set, tap the matching tile in the grid (smaller pip value first), **return the tile to the set, and reshuffle thoroughly** before drawing again.
-6. Tap the 🔬 button to watch the live rejection sampling math; enable "Advanced" to also see the live pip-bias, doubles-proportion, and autocorrelation checks once you've entered 20+ draws.
-7. Once you hit the target draw count, tap **Generate Seed**.
-8. Write down your phrase, tap **Clear Draws**, and power off the device.
+3. **Browsers label locally-opened files 'not secure' because there is no TLS certificate — expected, and irrelevant: the tool performs no network activity. Your secrets never traverse a connection. Integrity is established by the SHA-256 sidecar and signed releases; local hygiene (air-gap, auto-clear, clipboard discipline) is your protection, not HTTPS.**
+4. Wait for the green "✅ Wordlist + self-tests verified" pill to appear.
+5. Select your desired word count (12–24 words).
+6. Draw a tile from a well-shuffled standard 28-tile double-six domino set, tap the matching tile in the grid (smaller pip value first), **return the tile to the set, and reshuffle thoroughly** before drawing again.
+7. Tap the 🔬 button to watch the live rejection sampling math; enable "Advanced" to also see the live pip-bias, doubles-proportion, and autocorrelation checks once you've entered 20+ draws.
+8. Once you hit the target draw count, tap **Generate Seed**.
+9. Write down your phrase, tap **Clear Draws**, and power off the device.
 
 > ⚠️ If you see a "REJECTION SAMPLING TRIGGERED" message, this is expected occasionally (roughly 1-in-200,000 to 1-in-1.4 million depending on word count) and is not an error. Tap "Clear Draws" and start the full sequence again — do not try to fix or partially edit a rejected sequence.
 
