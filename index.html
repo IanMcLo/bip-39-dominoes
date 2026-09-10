@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; connect-src 'none';">
   <title>BIP39 Domino Draw Seed Generator</title>
   <style>
     body {
@@ -1435,7 +1436,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   clearDrawsBtn.addEventListener('click', async function() {
     clearAllSecrets();
-    await attemptClearClipboard();
+    await attemptClearClipboard(true);
   });
 
   verifyInput.addEventListener('input', function() {
@@ -1520,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (now - lastEscapeTime < 700) {
         // Double-tap detected - clear all secrets immediately
         clearAllSecrets();
-        attemptClearClipboard();
+        attemptClearClipboard(true);
       }
       lastEscapeTime = now;
     }
@@ -1571,7 +1572,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hardResetBtn) {
     hardResetBtn.addEventListener('click', async function() {
       clearAllSecrets();
-      await attemptClearClipboard();
+      await attemptClearClipboard(true);
       if (typeof window.hardReset === 'function') window.hardReset();
     });
   }
@@ -1646,25 +1647,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }, CLIPBOARD_AUTOCLEAR_MS);
   }
 
-  async function attemptClearClipboard() {
+  async function attemptClearClipboard(force) {
     if (clipboardClearTimer) {
       clearTimeout(clipboardClearTimer);
       clipboardClearTimer = null;
     }
-    // Best-effort: only overwrite the clipboard if it still holds the
-    // secret we put there, so Clear/Reset never clobbers something
-    // unrelated the user has copied since. If we can't verify (no
-    // readText permission), err on the side of NOT touching the
-    // clipboard rather than blindly wiping the user's unrelated data.
     try {
-      if (lastCopiedText && navigator.clipboard && navigator.clipboard.readText) {
+      if (force) {
+        // The user explicitly asked us to clear (Clear Draws / Hard
+        // Reset / panic double-Escape) — overwrite unconditionally.
+        // Unlike the passive auto-clear paths, we don't need read
+        // permission or a match-check here: deliberate intent
+        // justifies overwriting whatever is currently on the clipboard.
+        await writeClipboard('');
+      } else if (lastCopiedText && navigator.clipboard && navigator.clipboard.readText) {
+        // Best-effort passive clear: only overwrite if the clipboard
+        // still holds the secret we put there, so we never clobber
+        // something unrelated the user copied since. If we can't
+        // verify (no readText permission), skip rather than risk
+        // wiping unrelated data the user didn't ask us to touch.
         const current = await navigator.clipboard.readText();
         if (current === lastCopiedText) {
           await writeClipboard('');
         }
       }
     } catch (e) {
-      // No clipboard read permission — can't safely verify, so skip.
+      // No clipboard permission — can't safely verify/clear, so skip.
     }
     lastCopiedText = '';
   }
