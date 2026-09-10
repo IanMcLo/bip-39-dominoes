@@ -1,5 +1,17 @@
-## v1.0.1
+## Changelog
 
+## v1.0.2
+### Fixed
+
+- **Fixed Hard Reset / Clear Draws** to unconditionally overwrite the clipboard on explicit user action, rather than silently skipping the clear when clipboard-read permission is unavailable
+### Added
+
+- **Added a CSP meta tag** (default-src 'self' 'unsafe-inline'; connect-src 'none';) restricting the page to same-origin resources and blocking all outbound network requests
+- *Release File Hash:
+  5b6213c549d49ba684bcfdf9e10c237c6ef4daf46f792a4cdd0bb7d9a66119f*
+
+
+## v1.0.1
 ### Added
 
 - **Mnemonic verification feature:** paste an existing recovery phrase to check its BIP-39 checksum, reusing the existing WORDLIST and sha256() implementation (word → index → bits → entropy/checksum split → SHA-256 compare).
@@ -18,7 +30,7 @@ input[type="password"] now styled identically to input[type="text"] for visual c
 - **Hard Reset's input sweep now also matches input[type="password"]**, so it can no longer skip the verify field.
 - **Pasting into the verify field now attempts to scrub the OS clipboard** shortly after, if it still holds exactly what was pasted (mirrors the existing copy-to-clipboard auto-clear logic).
 - **Verify button now fails closed if the wordlist/self-test integrity check fails.**
-- 
+  
   *Release File Hash: afe24e94d9401f51ecd47783524db48a3afa78ee2c923287361788878216ba44*
 
 
